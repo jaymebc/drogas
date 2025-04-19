@@ -38,13 +38,29 @@
         }
         .input-row {
             display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 20px; /* Espaçamento horizontal entre elementos */
+            margin-bottom: 6px; /* Espaçamento vertical reduzido para compactar as linhas */
             flex-wrap: wrap;
+            align-items: flex-start; /* Alinha os itens no topo */
         }
-        .input-group, .result-group {
-            flex: 1;
-            min-width: 200px;
+        .input-row:last-child {
+            margin-bottom: 0; /* Remove margem inferior da última linha */
+        }
+        .input-group {
+            flex: 0 0 220px; /* Largura fixa para inputs */
+            min-width: 220px;
+        }
+        .result-group {
+            flex: 0 0 400px; /* Largura suficiente para evitar quebra de linha */
+            min-width: 280px;
+            margin-bottom: 10px; /* Adicionado espaçamento vertical entre os resultados */
+        }
+        .result-group label {
+            white-space: nowrap; /* Impede quebra de linha nos títulos */
+            font-size: 16px; /* Reduz o tamanho da fonte para ajustar títulos longos */
+        }
+        .result-group:last-child {
+            margin-bottom: 0; /* Remove margem inferior do último resultado */
         }
         label {
             font-weight: bold;
@@ -69,6 +85,18 @@
             color: #d32f2f;
             font-size: 12px;
             margin-top: 5px;
+        }
+        .info {
+            font-size: 12px;
+            color: #555;
+            margin-top: 5px;
+        }
+        .instructions {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 15px;
+            font-style: normal;
         }
         .drug-selection {
             margin-bottom: 20px;
@@ -139,6 +167,8 @@
                 <option value="nipride">Nitroprussiato - Nipride</option>
                 <option value="noradrenalina">Noradrenalina</option>
                 <option value="vasopressina">Vasopressina - Encrise</option>
+                <option value="remifentanil">Remifentanil</option>
+                <option value="remiLidoKeta">Remifentanil + Lidocaína + Ketamina</option>
             </select>
         </div>
 
@@ -503,6 +533,101 @@
                 </div>
             </div>
         </div>
+
+        <!-- Card para Remifentanil -->
+        <div class="card drug-card" id="remifentanilCard">
+            <h2>Remifentanil (01 fr = 02mg)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityRemifentanil">Quantidade (mg):</label>
+                    <input type="text" id="quantityRemifentanil" placeholder="Quantidade em mg" value="2" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityRemifentanil"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (μg/mL):</label>
+                    <span id="concentrationRemifentanil">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeRemifentanil">Volume (mL):</label>
+                    <input type="text" id="volumeRemifentanil" placeholder="Volume em mL" value="100" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeRemifentanil"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateRemifentanil">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseRemifentanil">Dose (μg/kg/min):</label>
+                    <input type="text" id="doseRemifentanil" placeholder="0,05-0,3 μg/kg/min" value="0,1" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseRemifentanil"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Remifentanil + Lidocaína + Ketamina -->
+        <div class="card drug-card" id="remiLidoKetaCard">
+            <h2>Remifentanil + Lidocaína + Ketamina</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityRemiLidoKeta">Remi Quant (mg):</label>
+                    <input type="text" id="quantityRemiLidoKeta" placeholder="Quantidade em mg" value="2" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityRemiLidoKeta"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final Remi (μg/mL):</label>
+                    <span id="concentrationRemiLidoKeta">0.00</span>
+                    <div class="info">Dose: 0,1-0,3 μg/kg/min</div>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeRemiLidoKeta">Remi Volume (mL):</label>
+                    <input type="text" id="volumeRemiLidoKeta" placeholder="Volume em mL" value="40" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeRemiLidoKeta"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final Keta (mg/mL):</label>
+                    <span id="concentrationKetaRemiLidoKeta">0.00</span>
+                    <div class="info">Dose: 0,1-0,2 mg/kg/h</div>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseRemiLidoKeta">Remi Dose (μg/kg/min):</label>
+                    <input type="text" id="doseRemiLidoKeta" placeholder="0,05-0,3 μg/kg/min" value="0,1" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseRemiLidoKeta"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final Lido (mg/mL):</label>
+                    <span id="concentrationLidoRemiLidoKeta">0.00</span>
+                    <div class="info">Dose: 1,0-2,0 mg/kg/h</div>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseKetaRemiLidoKeta">Ketamina Dose (mg/kg/h):</label>
+                    <input type="text" id="doseKetaRemiLidoKeta" placeholder="0,1-0,2 mg/kg/h" value="0,1" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseKetaRemiLidoKeta"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateRemiLidoKeta">0.00</span>
+                    <div class="info" id="infusionInfoRemiLidoKeta"></div>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseLidoRemiLidoKeta">Lidocaína Dose (mg/kg/h):</label>
+                    <input type="text" id="doseLidoRemiLidoKeta" placeholder="1-2 mg/kg/h" value="1" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseLidoRemiLidoKeta"></div>
+                </div>
+            </div>
+            <div class="instructions" id="instructionsRemiLidoKeta"></div>
+        </div>
     </div>
 
     <!-- Rodapé -->
@@ -520,60 +645,32 @@
         // Função para mostrar o card da droga selecionada
         function showDrugCard() {
             const drugSelect = document.getElementById("drugSelect").value;
-            const adrenalinaCard = document.getElementById("adrenalinaCard");
-            const azulMetilenoCard = document.getElementById("azulMetilenoCard");
-            const precedexCard = document.getElementById("precedexCard");
-            const dobutaminaCard = document.getElementById("dobutaminaCard");
-            const esmololCard = document.getElementById("esmololCard");
-            const milrinonaCard = document.getElementById("milrinonaCard");
-            const tridilCard = document.getElementById("tridilCard");
-            const niprideCard = document.getElementById("niprideCard");
-            const noradrenalinaCard = document.getElementById("noradrenalinaCard");
-            const vasopressinaCard = document.getElementById("vasopressinaCard");
+            const cards = document.querySelectorAll(".drug-card");
+            cards.forEach(card => card.classList.remove("active"));
 
-            // Ocultar todos os cards
-            adrenalinaCard.classList.remove("active");
-            azulMetilenoCard.classList.remove("active");
-            precedexCard.classList.remove("active");
-            dobutaminaCard.classList.remove("active");
-            esmololCard.classList.remove("active");
-            milrinonaCard.classList.remove("active");
-            tridilCard.classList.remove("active");
-            niprideCard.classList.remove("active");
-            noradrenalinaCard.classList.remove("active");
-            vasopressinaCard.classList.remove("active");
+            if (drugSelect === "none") return;
 
-            // Mostrar o card correspondente
-            if (drugSelect === "adrenalina") {
-                adrenalinaCard.classList.add("active");
-                recalculateAdrenalina();
-            } else if (drugSelect === "azulMetileno") {
-                azulMetilenoCard.classList.add("active");
-                recalculateAzulMetileno();
-            } else if (drugSelect === "precedex") {
-                precedexCard.classList.add("active");
-                recalculatePrecedex();
-            } else if (drugSelect === "dobutamina") {
-                dobutaminaCard.classList.add("active");
-                recalculateDobutamina();
-            } else if (drugSelect === "esmolol") {
-                esmololCard.classList.add("active");
-                recalculateEsmolol();
-            } else if (drugSelect === "milrinona") {
-                milrinonaCard.classList.add("active");
-                recalculateMilrinona();
-            } else if (drugSelect === "tridil") {
-                tridilCard.classList.add("active");
-                recalculateTridil();
-            } else if (drugSelect === "nipride") {
-                niprideCard.classList.add("active");
-                recalculateNipride();
-            } else if (drugSelect === "noradrenalina") {
-                noradrenalinaCard.classList.add("active");
-                recalculateNoradrenalina();
-            } else if (drugSelect === "vasopressina") {
-                vasopressinaCard.classList.add("active");
-                recalculateVasopressina();
+            const selectedCard = document.getElementById(`${drugSelect}Card`);
+            if (selectedCard) {
+                selectedCard.classList.add("active");
+                // Chama a função de cálculo correspondente
+                const recalculateFunctions = {
+                    adrenalina: recalculateAdrenalina,
+                    azulMetileno: recalculateAzulMetileno,
+                    precedex: recalculatePrecedex,
+                    dobutamina: recalculateDobutamina,
+                    esmolol: recalculateEsmolol,
+                    milrinona: recalculateMilrinona,
+                    tridil: recalculateTridil,
+                    nipride: recalculateNipride,
+                    noradrenalina: recalculateNoradrenalina,
+                    vasopressina: recalculateVasopressina,
+                    remifentanil: recalculateRemifentanil,
+                    remiLidoKeta: recalculateRemiLidoKeta
+                };
+                if (recalculateFunctions[drugSelect]) {
+                    recalculateFunctions[drugSelect]();
+                }
             }
         }
 
@@ -607,73 +704,28 @@
             }
 
             // Validação específica para os campos de dose
-            if (id === "doseEsmolol" && value) {
+            const doseValidations = {
+                doseEsmolol: { min: 50, max: 300, unit: "μg/kg/min" },
+                doseNipride: { min: 0.25, max: 2.0, unit: "μg/kg/min tenderly" },
+                doseNoradrenalina: { min: 0.1, max: 0.5, unit: "μg/kg/min" },
+                doseTridil: { min: 10, max: 200, unit: "μg/min" },
+                doseAdrenalina: { min: 0.1, max: 2.0, unit: "μg/kg/min" },
+                doseAzulMetileno: { min: 1.5, max: 2.0, unit: "mg/kg em 01 hora" },
+                dosePrecedex: { min: 0.1, max: 0.7, unit: "μg/kg/min" },
+                doseDobutamina: { min: 2.5, max: 20, unit: "μg/kg/min" },
+                doseMilrinona: { min: 0.2, max: 0.75, unit: "μg/kg/min" },
+                doseVasopressina: { min: 0.01, max: 0.04, unit: "U/min" },
+                doseRemifentanil: { min: 0.05, max: 0.3, unit: "μg/kg/min" },
+                doseRemiLidoKeta: { min: 0.05, max: 0.3, unit: "μg/kg/min" },
+                doseKetaRemiLidoKeta: { min: 0.1, max: 0.2, unit: "mg/kg/h" },
+                doseLidoRemiLidoKeta: { min: 1, max: 2, unit: "mg/kg/h" }
+            };
+
+            if (doseValidations[id] && value) {
                 const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 50 || doseValue > 300) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 50 e 300 μg/kg/min.";
-                    return false;
-                }
-            }
-            if (id === "doseNipride" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 0.25 || doseValue > 2.0) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 0,25 e 2,0 μg/kg/min.";
-                    return false;
-                }
-            }
-            if (id === "doseNoradrenalina" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 0.1 || doseValue > 0.5) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 0,1 e 0,5 μg/kg/min.";
-                    return false;
-                }
-            }
-            if (id === "doseTridil" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 10 || doseValue > 200) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 10 e 200 μg/min.";
-                    return false;
-                }
-            }
-            if (id === "doseAdrenalina" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 0.1 || doseValue > 2.0) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 0,1 e 2,0 μg/kg/min.";
-                    return false;
-                }
-            }
-            if (id === "doseAzulMetileno" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 1.5 || doseValue > 2.0) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 1,5 e 2 mg/kg em 01 hora.";
-                    return false;
-                }
-            }
-            if (id === "dosePrecedex" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 0.1 || doseValue > 0.7) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 0,1 e 0,7 μg/kg/min.";
-                    return false;
-                }
-            }
-            if (id === "doseDobutamina" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 2.5 || doseValue > 20) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 2,5 e 20 μg/kg/min.";
-                    return false;
-                }
-            }
-            if (id === "doseMilrinona" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 0.2 || doseValue > 0.75) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 0,2 e 0,75 μg/kg/min.";
-                    return false;
-                }
-            }
-            if (id === "doseVasopressina" && value) {
-                const doseValue = parseFloat(value.replace(',', '.'));
-                if (doseValue < 0.01 || doseValue > 0.04) {
-                    errorElement.textContent = "Erro: Dose deve estar entre 0,01 e 0,04 U/min.";
+                const { min, max, unit } = doseValidations[id];
+                if (doseValue < min || doseValue > max) {
+                    errorElement.textContent = `Erro: Dose deve estar entre ${min.toString().replace('.', ',')} e ${max.toString().replace('.', ',')} ${unit}.`;
                     return false;
                 }
             }
@@ -898,10 +950,10 @@
             const volume = parseFloat(volumeInput.value.replace(',', '.'));
             const dose = parseFloat(doseInput.value.replace(',', '.'));
 
-            const concentration = (1000 * quantity) / volume; // Convertendo mg para μg
+            const concentration = (1000 * quantity) / volume;
             document.getElementById("concentrationMilrinona").textContent = concentration.toFixed(2);
 
-            const bolus = (weight * 50 * 6) / concentration; // Bolus de 50 μg/kg em 10 min, ajustado para mL/h
+            const bolus = (weight * 50 * 6) / concentration;
             document.getElementById("bolusMilrinona").textContent = bolus.toFixed(2);
 
             const infusionRate = (dose * weight * 60) / concentration;
@@ -978,7 +1030,7 @@
             const concentration = (quantity * 1000) / volume;
             document.getElementById("concentrationNipride").textContent = concentration.toFixed(2);
 
-            const infusionRate = (dose * weight * 60) / (1 * concentration);
+            const infusionRate = (dose * weight * 60) / concentration;
             document.getElementById("infusionRateNipride").textContent = infusionRate.toFixed(2);
         }
 
@@ -1013,7 +1065,7 @@
             const concentration = (quantity * 1000) / volume;
             document.getElementById("concentrationNoradrenalina").textContent = concentration.toFixed(2);
 
-            const infusionRate = (weight * dose * 60) / (1 * concentration);
+            const infusionRate = (weight * dose * 60) / concentration;
             document.getElementById("infusionRateNoradrenalina").textContent = infusionRate.toFixed(2);
         }
 
@@ -1051,72 +1103,112 @@
             document.getElementById("infusionRateVasopressina").textContent = infusionRate.toFixed(2);
         }
 
+        // Função para recalcular os valores (Remifentanil)
+        function recalculateRemifentanil() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityRemifentanil");
+            const volumeInput = document.getElementById("volumeRemifentanil");
+            const doseInput = document.getElementById("doseRemifentanil");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationRemifentanil").textContent = "0.00";
+                document.getElementById("infusionRateRemifentanil").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = (quantity * 1000) / volume; // Convertendo mg para μg
+            document.getElementById("concentrationRemifentanil").textContent = concentration.toFixed(2);
+
+            const infusionRate = (dose * weight * 60) / concentration;
+            document.getElementById("infusionRateRemifentanil").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Remifentanil + Lidocaína + Ketamina)
+        function recalculateRemiLidoKeta() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityRemiLidoKeta");
+            const volumeInput = document.getElementById("volumeRemiLidoKeta");
+            const doseRemiInput = document.getElementById("doseRemiLidoKeta");
+            const doseKetaInput = document.getElementById("doseKetaRemiLidoKeta");
+            const doseLidoInput = document.getElementById("doseLidoRemiLidoKeta");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseRemiInput, doseKetaInput, doseLidoInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationRemiLidoKeta").textContent = "0.00";
+                document.getElementById("concentrationKetaRemiLidoKeta").textContent = "0.00";
+                document.getElementById("concentrationLidoRemiLidoKeta").textContent = "0.00";
+                document.getElementById("infusionRateRemiLidoKeta").textContent = "0.00";
+                document.getElementById("instructionsRemiLidoKeta").textContent = "";
+                document.getElementById("infusionInfoRemiLidoKeta").textContent = "";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantityRemi = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const doseRemi = parseFloat(doseRemiInput.value.replace(',', '.'));
+            const doseKeta = parseFloat(doseKetaInput.value.replace(',', '.'));
+            const doseLido = parseFloat(doseLidoInput.value.replace(',', '.'));
+
+            // Cálculo da concentração final (Remifentanil)
+            const concentrationRemi = (quantityRemi * 1000) / volume; // Convertendo mg para μg
+            document.getElementById("concentrationRemiLidoKeta").textContent = concentrationRemi.toFixed(2);
+
+            // Cálculo da velocidade de infusão (baseada no Remifentanil)
+            const infusionRate = (doseRemi * weight * 60) / concentrationRemi;
+            document.getElementById("infusionRateRemiLidoKeta").textContent = infusionRate.toFixed(2);
+
+            // Cálculo das quantidades de Ketamina e Lidocaína
+            const quantityKeta = (doseKeta * weight * (volume / infusionRate));
+            const quantityLido = (doseLido * weight * (volume / infusionRate));
+
+            // Cálculo das concentrações finais (Ketamina e Lidocaína)
+            const concentrationKeta = quantityKeta / volume;
+            const concentrationLido = quantityLido / volume;
+            document.getElementById("concentrationKetaRemiLidoKeta").textContent = concentrationKeta.toFixed(2);
+            document.getElementById("concentrationLidoRemiLidoKeta").textContent = concentrationLido.toFixed(2);
+
+            // Instruções
+            const instructions = `Instruções: monte a solução com ${volume.toFixed(2)} mL, Remi ${quantityRemi.toFixed(2)} mg, Lido ${quantityLido.toFixed(2)} mg e Keta ${quantityKeta.toFixed(2)} mg.`;
+            document.getElementById("instructionsRemiLidoKeta").textContent = instructions;
+
+            // Aviso de infusão
+            const infusionInfo = `Obedeça as instruções de preparação da solução.`;
+            document.getElementById("infusionInfoRemiLidoKeta").textContent = infusionInfo;
+        }
+
         // Eventos para validação e cálculo automático (campos compartilhados)
         document.getElementById("weight").addEventListener("input", () => {
             validateInput(document.getElementById("weight"));
-            if (document.getElementById("adrenalinaCard").classList.contains("active")) {
-                recalculateAdrenalina();
-            }
-            if (document.getElementById("azulMetilenoCard").classList.contains("active")) {
-                recalculateAzulMetileno();
-            }
-            if (document.getElementById("precedexCard").classList.contains("active")) {
-                recalculatePrecedex();
-            }
-            if (document.getElementById("dobutaminaCard").classList.contains("active")) {
-                recalculateDobutamina();
-            }
-            if (document.getElementById("esmololCard").classList.contains("active")) {
-                recalculateEsmolol();
-            }
-            if (document.getElementById("milrinonaCard").classList.contains("active")) {
-                recalculateMilrinona();
-            }
-            if (document.getElementById("tridilCard").classList.contains("active")) {
-                recalculateTridil();
-            }
-            if (document.getElementById("niprideCard").classList.contains("active")) {
-                recalculateNipride();
-            }
-            if (document.getElementById("noradrenalinaCard").classList.contains("active")) {
-                recalculateNoradrenalina();
-            }
-            if (document.getElementById("vasopressinaCard").classList.contains("active")) {
-                recalculateVasopressina();
-            }
+            showDrugCard();
         });
         document.getElementById("height").addEventListener("input", () => {
             validateInput(document.getElementById("height"));
-            if (document.getElementById("adrenalinaCard").classList.contains("active")) {
-                recalculateAdrenalina();
-            }
-            if (document.getElementById("azulMetilenoCard").classList.contains("active")) {
-                recalculateAzulMetileno();
-            }
-            if (document.getElementById("precedexCard").classList.contains("active")) {
-                recalculatePrecedex();
-            }
-            if (document.getElementById("dobutaminaCard").classList.contains("active")) {
-                recalculateDobutamina();
-            }
-            if (document.getElementById("esmololCard").classList.contains("active")) {
-                recalculateEsmolol();
-            }
-            if (document.getElementById("milrinonaCard").classList.contains("active")) {
-                recalculateMilrinona();
-            }
-            if (document.getElementById("tridilCard").classList.contains("active")) {
-                recalculateTridil();
-            }
-            if (document.getElementById("niprideCard").classList.contains("active")) {
-                recalculateNipride();
-            }
-            if (document.getElementById("noradrenalinaCard").classList.contains("active")) {
-                recalculateNoradrenalina();
-            }
-            if (document.getElementById("vasopressinaCard").classList.contains("active")) {
-                recalculateVasopressina();
-            }
+            showDrugCard();
         });
 
         // Eventos para Adrenalina
@@ -1257,6 +1349,42 @@
         document.getElementById("doseVasopressina").addEventListener("input", () => {
             validateInput(document.getElementById("doseVasopressina"));
             recalculateVasopressina();
+        });
+
+        // Eventos para Remifentanil
+        document.getElementById("quantityRemifentanil").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityRemifentanil"));
+            recalculateRemifentanil();
+        });
+        document.getElementById("volumeRemifentanil").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeRemifentanil"));
+            recalculateRemifentanil();
+        });
+        document.getElementById("doseRemifentanil").addEventListener("input", () => {
+            validateInput(document.getElementById("doseRemifentanil"));
+            recalculateRemifentanil();
+        });
+
+        // Eventos para Remifentanil + Lidocaína + Ketamina
+        document.getElementById("quantityRemiLidoKeta").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityRemiLidoKeta"));
+            recalculateRemiLidoKeta();
+        });
+        document.getElementById("volumeRemiLidoKeta").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeRemiLidoKeta"));
+            recalculateRemiLidoKeta();
+        });
+        document.getElementById("doseRemiLidoKeta").addEventListener("input", () => {
+            validateInput(document.getElementById("doseRemiLidoKeta"));
+            recalculateRemiLidoKeta();
+        });
+        document.getElementById("doseKetaRemiLidoKeta").addEventListener("input", () => {
+            validateInput(document.getElementById("doseKetaRemiLidoKeta"));
+            recalculateRemiLidoKeta();
+        });
+        document.getElementById("doseLidoRemiLidoKeta").addEventListener("input", () => {
+            validateInput(document.getElementById("doseLidoRemiLidoKeta"));
+            recalculateRemiLidoKeta();
         });
     </script>
 </body>
