@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infusão Contínua</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        header {
+            background-color: #4682b4;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #4682b4;
+            margin-top: 0;
+        }
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .input-group, .result-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, span, select {
+            width: 100%;
+            max-width: 150px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        span {
+            background-color: #b3cde0;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .error {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .drug-selection {
+            margin-bottom: 20px;
+        }
+        .drug-selection label {
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .drug-selection select {
+            max-width: 250px;
+            font-size: 16px;
+        }
+        .drug-card {
+            display: none;
+        }
+        .drug-card.active {
+            display: block;
+        }
+        footer {
+            background-color: #4682b4;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 14px;
+        }
+        footer span {
+            background-color: transparent;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>Infusão Contínua</header>
+    <div class="container">
+        <!-- Card para Dados do Paciente -->
+        <div class="card">
+            <h2>Dados do Paciente</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="weight">Peso (kg):</label>
+                    <input type="text" id="weight" placeholder="Ex.: 95,5" value="80" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorWeight"></div>
+                </div>
+                <div class="input-group">
+                    <label for="height">Altura (cm):</label>
+                    <input type="text" id="height" placeholder="Ex.: 182" value="170" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorHeight"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seleção da Droga Vasoativa -->
+        <div class="drug-selection">
+            <label for="drugSelect">Escolha a droga vasoativa:</label>
+            <select id="drugSelect" onchange="showDrugCard()">
+                <option value="none">Selecione uma droga</option>
+                <option value="adrenalina">Adrenalina</option>
+                <option value="azulMetileno">Azul de Metileno</option>
+                <option value="precedex">Dexmedetomidina - Precedex</option>
+                <option value="dobutamina">Dobutamina</option>
+                <option value="esmolol">Esmolol</option>
+                <option value="milrinona">Milrinona - Primacor</option>
+                <option value="tridil">Nitroglicerina - Tridil</option>
+                <option value="nipride">Nitroprussiato - Nipride</option>
+                <option value="noradrenalina">Noradrenalina</option>
+                <option value="vasopressina">Vasopressina - Encrise</option>
+            </select>
+        </div>
+
+        <!-- Card para Adrenalina -->
+        <div class="card drug-card" id="adrenalinaCard">
+            <h2>Adrenalina (01 amp = 1mg)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityAdrenalina">Quantidade (mg):</label>
+                    <input type="text" id="quantityAdrenalina" placeholder="Quantidade em mg" value="10" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityAdrenalina"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (μg/mL):</label>
+                    <span id="concentrationAdrenalina">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeAdrenalina">Volume (mL):</label>
+                    <input type="text" id="volumeAdrenalina" placeholder="Volume em mL" value="100" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeAdrenalina"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateAdrenalina">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseAdrenalina">Dose (μg/kg/min):</label>
+                    <input type="text" id="doseAdrenalina" placeholder="0,1-2,0 μg/kg/min" value="0,1" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseAdrenalina"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Azul de Metileno -->
+        <div class="card drug-card" id="azulMetilenoCard">
+            <h2>Azul de Metileno (01 amp = 10mg/mL - 02mL)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityAzulMetileno">Quantidade (mg):</label>
+                    <input type="text" id="quantityAzulMetileno" placeholder="Quantidade em mg" value="200" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityAzulMetileno"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (mg/mL):</label>
+                    <span id="concentrationAzulMetileno">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeAzulMetileno">Volume (mL):</label>
+                    <input type="text" id="volumeAzulMetileno" placeholder="Volume em mL" value="200" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeAzulMetileno"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h por 01 hora):</label>
+                    <span id="infusionRateAzulMetileno">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseAzulMetileno">Dose (mg/kg em 01 hora):</label>
+                    <input type="text" id="doseAzulMetileno" placeholder="1,5-2 mg/kg em 01 hora" value="2" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseAzulMetileno"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Dexmedetomidina - Precedex -->
+        <div class="card drug-card" id="precedexCard">
+            <h2>Dexmedetomidina - Precedex (01 amp = 1mL = 200μg)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityPrecedex">Quantidade (μg):</label>
+                    <input type="text" id="quantityPrecedex" placeholder="Quantidade em μg" value="200" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityPrecedex"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (μg/mL):</label>
+                    <span id="concentrationPrecedex">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumePrecedex">Volume (mL):</label>
+                    <input type="text" id="volumePrecedex" placeholder="Volume em mL" value="100" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumePrecedex"></div>
+                </div>
+                <div class="result-group">
+                    <label>Bolus 10 min (mL/h):</label>
+                    <span id="bolus10MinPrecedex">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="dosePrecedex">Dose (μg/kg/min):</label>
+                    <input type="text" id="dosePrecedex" placeholder="0,1-0,7 μg/kg/min" value="0,3" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDosePrecedex"></div>
+                </div>
+                <div class="result-group">
+                    <label>Bolus 20 min (mL/h):</label>
+                    <span id="bolus20MinPrecedex">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="result-group">
+                    <label>Bolus 01 μg/kg (mL):</label>
+                    <span id="bolus1ugPrecedex">0.00</span>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRatePrecedex">0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Dobutamina -->
+        <div class="card drug-card" id="dobutaminaCard">
+            <h2>Dobutamina (01 amp = 250mg)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityDobutamina">Quantidade (mg):</label>
+                    <input type="text" id="quantityDobutamina" placeholder="Quantidade em mg" value="250" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityDobutamina"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (mg/mL):</label>
+                    <span id="concentrationDobutamina">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeDobutamina">Volume (mL):</label>
+                    <input type="text" id="volumeDobutamina" placeholder="Volume em mL" value="250" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeDobutamina"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateDobutamina">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseDobutamina">Dose (μg/kg/min):</label>
+                    <input type="text" id="doseDobutamina" placeholder="2,5-20 μg/kg/min" value="5" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseDobutamina"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Esmolol -->
+        <div class="card drug-card" id="esmololCard">
+            <h2>Esmolol (amp 10mg/mL - 10mL e frasco 2500mg/250mL - 250mL)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityEsmolol">Quantidade (mg):</label>
+                    <input type="text" id="quantityEsmolol" placeholder="Quantidade em mg" value="2500" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityEsmolol"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (mg/mL):</label>
+                    <span id="concentrationEsmolol">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeEsmolol">Volume (mL):</label>
+                    <input type="text" id="volumeEsmolol" placeholder="Volume em mL" value="250" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeEsmolol"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateEsmolol">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseEsmolol">Dose (μg/kg/min):</label>
+                    <input type="text" id="doseEsmolol" placeholder="50-300 μg/kg/min" value="50" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseEsmolol"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Milrinona - Primacor -->
+        <div class="card drug-card" id="milrinonaCard">
+            <h2>Milrinona - Primacor (01 amp = 1mL = 10mg)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityMilrinona">Quantidade (mg):</label>
+                    <input type="text" id="quantityMilrinona" placeholder="Quantidade em mg" value="10" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityMilrinona"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (μg/mL):</label>
+                    <span id="concentrationMilrinona">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeMilrinona">Volume (mL):</label>
+                    <input type="text" id="volumeMilrinona" placeholder="Volume em mL" value="100" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeMilrinona"></div>
+                </div>
+                <div class="result-group">
+                    <label>Bolus 50μg/kg em 10 min (mL/h):</label>
+                    <span id="bolusMilrinona">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseMilrinona">Dose (μg/kg/min):</label>
+                    <input type="text" id="doseMilrinona" placeholder="0,2-0,75 μg/kg/min" value="0,375" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseMilrinona"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateMilrinona">0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Nitroglicerina - Tridil -->
+        <div class="card drug-card" id="tridilCard">
+            <h2>Nitroglicerina - Tridil (01 amp = 10mL = 50mg)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityTridil">Quantidade (mg):</label>
+                    <input type="text" id="quantityTridil" placeholder="Quantidade em mg" value="50" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityTridil"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (μg/mL):</label>
+                    <span id="concentrationTridil">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeTridil">Volume (mL - SGI 5%):</label>
+                    <input type="text" id="volumeTridil" placeholder="Volume em mL" value="250" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeTridil"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateTridil">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseTridil">Dose (μg/min):</label>
+                    <input type="text" id="doseTridil" placeholder="10-200 μg/min" value="20" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseTridil"></div>
+                </div>
+                <div class="result-group">
+                    <label>Dose Administrada (μg/kg/min):</label>
+                    <span id="administeredDoseTridil">0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Nitroprussiato - Nipride -->
+        <div class="card drug-card" id="niprideCard">
+            <h2>Nitroprussiato - Nipride (1 amp = 2mL = 50mg)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityNipride">Quantidade (mg):</label>
+                    <input type="text" id="quantityNipride" placeholder="Quantidade em mg" value="50" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityNipride"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (μg/mL):</label>
+                    <span id="concentrationNipride">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeNipride">Volume (mL - SGI 5%):</label>
+                    <input type="text" id="volumeNipride" placeholder="Volume em mL" value="250" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeNipride"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateNipride">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseNipride">Dose (μg/kg/min):</label>
+                    <input type="text" id="doseNipride" placeholder="0,25-2,0 μg/kg/min" value="0,25" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseNipride"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Noradrenalina -->
+        <div class="card drug-card" id="noradrenalinaCard">
+            <h2>Noradrenalina (01 amp = 04mg)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityNoradrenalina">Quantidade (mg):</label>
+                    <input type="text" id="quantityNoradrenalina" placeholder="Quantidade em mg" value="4" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityNoradrenalina"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (μg/mL):</label>
+                    <span id="concentrationNoradrenalina">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeNoradrenalina">Volume (mL):</label>
+                    <input type="text" id="volumeNoradrenalina" placeholder="Volume em mL" value="200" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeNoradrenalina"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateNoradrenalina">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseNoradrenalina">Dose (μg/kg/min):</label>
+                    <input type="text" id="doseNoradrenalina" placeholder="0,1-0,5 μg/kg/min" value="0,1" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseNoradrenalina"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para Vasopressina - Encrise -->
+        <div class="card drug-card" id="vasopressinaCard">
+            <h2>Vasopressina - Encrise (01 amp = 01mL - 20U)</h2>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="quantityVasopressina">Quantidade (U):</label>
+                    <input type="text" id="quantityVasopressina" placeholder="Quantidade em U" value="20" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorQuantityVasopressina"></div>
+                </div>
+                <div class="result-group">
+                    <label>Concentração Final (U/mL):</label>
+                    <span id="concentrationVasopressina">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="volumeVasopressina">Volume (mL):</label>
+                    <input type="text" id="volumeVasopressina" placeholder="Volume em mL" value="200" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorVolumeVasopressina"></div>
+                </div>
+                <div class="result-group">
+                    <label>Veloc. Infusão (mL/h):</label>
+                    <span id="infusionRateVasopressina">0.00</span>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="doseVasopressina">Dose (U/min):</label>
+                    <input type="text" id="doseVasopressina" placeholder="0,01-0,04 U/min" value="0,02" onkeypress="restrictInput(event)">
+                    <div class="error" id="errorDoseVasopressina"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer>
+        Visualizações: <span id="viewCount">0</span> | JBC Informática
+    </footer>
+
+    <script>
+        // Contador de visualizações usando localStorage
+        let views = localStorage.getItem("pageViews") ? parseInt(localStorage.getItem("pageViews")) : 0;
+        views += 1;
+        localStorage.setItem("pageViews", views);
+        document.getElementById("viewCount").textContent = views;
+
+        // Função para mostrar o card da droga selecionada
+        function showDrugCard() {
+            const drugSelect = document.getElementById("drugSelect").value;
+            const adrenalinaCard = document.getElementById("adrenalinaCard");
+            const azulMetilenoCard = document.getElementById("azulMetilenoCard");
+            const precedexCard = document.getElementById("precedexCard");
+            const dobutaminaCard = document.getElementById("dobutaminaCard");
+            const esmololCard = document.getElementById("esmololCard");
+            const milrinonaCard = document.getElementById("milrinonaCard");
+            const tridilCard = document.getElementById("tridilCard");
+            const niprideCard = document.getElementById("niprideCard");
+            const noradrenalinaCard = document.getElementById("noradrenalinaCard");
+            const vasopressinaCard = document.getElementById("vasopressinaCard");
+
+            // Ocultar todos os cards
+            adrenalinaCard.classList.remove("active");
+            azulMetilenoCard.classList.remove("active");
+            precedexCard.classList.remove("active");
+            dobutaminaCard.classList.remove("active");
+            esmololCard.classList.remove("active");
+            milrinonaCard.classList.remove("active");
+            tridilCard.classList.remove("active");
+            niprideCard.classList.remove("active");
+            noradrenalinaCard.classList.remove("active");
+            vasopressinaCard.classList.remove("active");
+
+            // Mostrar o card correspondente
+            if (drugSelect === "adrenalina") {
+                adrenalinaCard.classList.add("active");
+                recalculateAdrenalina();
+            } else if (drugSelect === "azulMetileno") {
+                azulMetilenoCard.classList.add("active");
+                recalculateAzulMetileno();
+            } else if (drugSelect === "precedex") {
+                precedexCard.classList.add("active");
+                recalculatePrecedex();
+            } else if (drugSelect === "dobutamina") {
+                dobutaminaCard.classList.add("active");
+                recalculateDobutamina();
+            } else if (drugSelect === "esmolol") {
+                esmololCard.classList.add("active");
+                recalculateEsmolol();
+            } else if (drugSelect === "milrinona") {
+                milrinonaCard.classList.add("active");
+                recalculateMilrinona();
+            } else if (drugSelect === "tridil") {
+                tridilCard.classList.add("active");
+                recalculateTridil();
+            } else if (drugSelect === "nipride") {
+                niprideCard.classList.add("active");
+                recalculateNipride();
+            } else if (drugSelect === "noradrenalina") {
+                noradrenalinaCard.classList.add("active");
+                recalculateNoradrenalina();
+            } else if (drugSelect === "vasopressina") {
+                vasopressinaCard.classList.add("active");
+                recalculateVasopressina();
+            }
+        }
+
+        // Função para restringir a entrada de caracteres inválidos
+        function restrictInput(event) {
+            const char = String.fromCharCode(event.keyCode || event.which);
+            const input = event.target;
+            const value = input.value + char;
+            
+            // Permitir apenas números e uma única vírgula
+            if (!/[0-9,]/.test(char) || (char === ',' && input.value.includes(','))) {
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar o valor completo após a digitação
+            setTimeout(() => validateInput(input), 0);
+        }
+
+        // Função de validação
+        function validateInput(input) {
+            const value = input.value;
+            const id = input.id;
+            const errorElement = document.getElementById(`error${id.charAt(0).toUpperCase() + id.slice(1)}`);
+
+            // Validação: formato correto (números e vírgula)
+            const validFormat = value === "" || /^\d+(,\d*)?$/.test(value);
+            if (!validFormat) {
+                errorElement.textContent = "Erro: Use apenas números e vírgula.";
+                return false;
+            }
+
+            // Validação específica para os campos de dose
+            if (id === "doseEsmolol" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 50 || doseValue > 300) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 50 e 300 μg/kg/min.";
+                    return false;
+                }
+            }
+            if (id === "doseNipride" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 0.25 || doseValue > 2.0) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 0,25 e 2,0 μg/kg/min.";
+                    return false;
+                }
+            }
+            if (id === "doseNoradrenalina" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 0.1 || doseValue > 0.5) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 0,1 e 0,5 μg/kg/min.";
+                    return false;
+                }
+            }
+            if (id === "doseTridil" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 10 || doseValue > 200) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 10 e 200 μg/min.";
+                    return false;
+                }
+            }
+            if (id === "doseAdrenalina" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 0.1 || doseValue > 2.0) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 0,1 e 2,0 μg/kg/min.";
+                    return false;
+                }
+            }
+            if (id === "doseAzulMetileno" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 1.5 || doseValue > 2.0) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 1,5 e 2 mg/kg em 01 hora.";
+                    return false;
+                }
+            }
+            if (id === "dosePrecedex" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 0.1 || doseValue > 0.7) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 0,1 e 0,7 μg/kg/min.";
+                    return false;
+                }
+            }
+            if (id === "doseDobutamina" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 2.5 || doseValue > 20) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 2,5 e 20 μg/kg/min.";
+                    return false;
+                }
+            }
+            if (id === "doseMilrinona" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 0.2 || doseValue > 0.75) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 0,2 e 0,75 μg/kg/min.";
+                    return false;
+                }
+            }
+            if (id === "doseVasopressina" && value) {
+                const doseValue = parseFloat(value.replace(',', '.'));
+                if (doseValue < 0.01 || doseValue > 0.04) {
+                    errorElement.textContent = "Erro: Dose deve estar entre 0,01 e 0,04 U/min.";
+                    return false;
+                }
+            }
+
+            errorElement.textContent = "";
+            return true;
+        }
+
+        // Função para recalcular os valores (Adrenalina)
+        function recalculateAdrenalina() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityAdrenalina");
+            const volumeInput = document.getElementById("volumeAdrenalina");
+            const doseInput = document.getElementById("doseAdrenalina");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationAdrenalina").textContent = "0.00";
+                document.getElementById("infusionRateAdrenalina").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = (1000 * quantity) / volume;
+            document.getElementById("concentrationAdrenalina").textContent = concentration.toFixed(2);
+
+            const infusionRate = (dose * weight * 60) / concentration;
+            document.getElementById("infusionRateAdrenalina").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Azul de Metileno)
+        function recalculateAzulMetileno() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityAzulMetileno");
+            const volumeInput = document.getElementById("volumeAzulMetileno");
+            const doseInput = document.getElementById("doseAzulMetileno");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationAzulMetileno").textContent = "0.00";
+                document.getElementById("infusionRateAzulMetileno").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = quantity / volume;
+            document.getElementById("concentrationAzulMetileno").textContent = concentration.toFixed(2);
+
+            const infusionRate = (weight * dose) / concentration;
+            document.getElementById("infusionRateAzulMetileno").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Dexmedetomidina - Precedex)
+        function recalculatePrecedex() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityPrecedex");
+            const volumeInput = document.getElementById("volumePrecedex");
+            const doseInput = document.getElementById("dosePrecedex");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationPrecedex").textContent = "0.00";
+                document.getElementById("bolus10MinPrecedex").textContent = "0.00";
+                document.getElementById("bolus20MinPrecedex").textContent = "0.00";
+                document.getElementById("bolus1ugPrecedex").textContent = "0.00";
+                document.getElementById("infusionRatePrecedex").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = quantity / volume;
+            document.getElementById("concentrationPrecedex").textContent = concentration.toFixed(2);
+
+            const bolus10Min = (weight / concentration) * 6;
+            document.getElementById("bolus10MinPrecedex").textContent = bolus10Min.toFixed(2);
+
+            const bolus20Min = (weight / concentration) * 3;
+            document.getElementById("bolus20MinPrecedex").textContent = bolus20Min.toFixed(2);
+
+            const bolus1ug = weight / concentration;
+            document.getElementById("bolus1ugPrecedex").textContent = bolus1ug.toFixed(2);
+
+            const infusionRate = (dose * weight) / concentration;
+            document.getElementById("infusionRatePrecedex").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Dobutamina)
+        function recalculateDobutamina() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityDobutamina");
+            const volumeInput = document.getElementById("volumeDobutamina");
+            const doseInput = document.getElementById("doseDobutamina");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationDobutamina").textContent = "0.00";
+                document.getElementById("infusionRateDobutamina").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = quantity / volume;
+            document.getElementById("concentrationDobutamina").textContent = concentration.toFixed(2);
+
+            const infusionRate = (dose * weight * 6 * concentration) / 100;
+            document.getElementById("infusionRateDobutamina").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Esmolol)
+        function recalculateEsmolol() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityEsmolol");
+            const volumeInput = document.getElementById("volumeEsmolol");
+            const doseInput = document.getElementById("doseEsmolol");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationEsmolol").textContent = "0.00";
+                document.getElementById("infusionRateEsmolol").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = quantity / volume;
+            document.getElementById("concentrationEsmolol").textContent = concentration.toFixed(2);
+
+            const infusionRate = (dose * weight * 60) / (concentration * 1000);
+            document.getElementById("infusionRateEsmolol").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Milrinona - Primacor)
+        function recalculateMilrinona() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityMilrinona");
+            const volumeInput = document.getElementById("volumeMilrinona");
+            const doseInput = document.getElementById("doseMilrinona");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationMilrinona").textContent = "0.00";
+                document.getElementById("bolusMilrinona").textContent = "0.00";
+                document.getElementById("infusionRateMilrinona").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = (1000 * quantity) / volume; // Convertendo mg para μg
+            document.getElementById("concentrationMilrinona").textContent = concentration.toFixed(2);
+
+            const bolus = (weight * 50 * 6) / concentration; // Bolus de 50 μg/kg em 10 min, ajustado para mL/h
+            document.getElementById("bolusMilrinona").textContent = bolus.toFixed(2);
+
+            const infusionRate = (dose * weight * 60) / concentration;
+            document.getElementById("infusionRateMilrinona").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Nitroglicerina - Tridil)
+        function recalculateTridil() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityTridil");
+            const volumeInput = document.getElementById("volumeTridil");
+            const doseInput = document.getElementById("doseTridil");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationTridil").textContent = "0.00";
+                document.getElementById("infusionRateTridil").textContent = "0.00";
+                document.getElementById("administeredDoseTridil").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = (quantity * 1000) / volume;
+            document.getElementById("concentrationTridil").textContent = concentration.toFixed(2);
+
+            const infusionRate = (dose * 60) / concentration;
+            document.getElementById("infusionRateTridil").textContent = infusionRate.toFixed(2);
+
+            const administeredDose = dose / weight;
+            document.getElementById("administeredDoseTridil").textContent = administeredDose.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Nitroprussiato - Nipride)
+        function recalculateNipride() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityNipride");
+            const volumeInput = document.getElementById("volumeNipride");
+            const doseInput = document.getElementById("doseNipride");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationNipride").textContent = "0.00";
+                document.getElementById("infusionRateNipride").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = (quantity * 1000) / volume;
+            document.getElementById("concentrationNipride").textContent = concentration.toFixed(2);
+
+            const infusionRate = (dose * weight * 60) / (1 * concentration);
+            document.getElementById("infusionRateNipride").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Noradrenalina)
+        function recalculateNoradrenalina() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityNoradrenalina");
+            const volumeInput = document.getElementById("volumeNoradrenalina");
+            const doseInput = document.getElementById("doseNoradrenalina");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationNoradrenalina").textContent = "0.00";
+                document.getElementById("infusionRateNoradrenalina").textContent = "0.00";
+                return;
+            }
+
+            const weight = parseFloat(weightInput.value.replace(',', '.'));
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = (quantity * 1000) / volume;
+            document.getElementById("concentrationNoradrenalina").textContent = concentration.toFixed(2);
+
+            const infusionRate = (weight * dose * 60) / (1 * concentration);
+            document.getElementById("infusionRateNoradrenalina").textContent = infusionRate.toFixed(2);
+        }
+
+        // Função para recalcular os valores (Vasopressina - Encrise)
+        function recalculateVasopressina() {
+            const weightInput = document.getElementById("weight");
+            const heightInput = document.getElementById("height");
+            const quantityInput = document.getElementById("quantityVasopressina");
+            const volumeInput = document.getElementById("volumeVasopressina");
+            const doseInput = document.getElementById("doseVasopressina");
+
+            const inputs = [weightInput, heightInput, quantityInput, volumeInput, doseInput];
+            let allValid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input) || !input.value) {
+                    allValid = false;
+                }
+            });
+
+            if (!allValid) {
+                document.getElementById("concentrationVasopressina").textContent = "0.00";
+                document.getElementById("infusionRateVasopressina").textContent = "0.00";
+                return;
+            }
+
+            const quantity = parseFloat(quantityInput.value.replace(',', '.'));
+            const volume = parseFloat(volumeInput.value.replace(',', '.'));
+            const dose = parseFloat(doseInput.value.replace(',', '.'));
+
+            const concentration = quantity / volume;
+            document.getElementById("concentrationVasopressina").textContent = concentration.toFixed(2);
+
+            const infusionRate = (dose * 60) / concentration;
+            document.getElementById("infusionRateVasopressina").textContent = infusionRate.toFixed(2);
+        }
+
+        // Eventos para validação e cálculo automático (campos compartilhados)
+        document.getElementById("weight").addEventListener("input", () => {
+            validateInput(document.getElementById("weight"));
+            if (document.getElementById("adrenalinaCard").classList.contains("active")) {
+                recalculateAdrenalina();
+            }
+            if (document.getElementById("azulMetilenoCard").classList.contains("active")) {
+                recalculateAzulMetileno();
+            }
+            if (document.getElementById("precedexCard").classList.contains("active")) {
+                recalculatePrecedex();
+            }
+            if (document.getElementById("dobutaminaCard").classList.contains("active")) {
+                recalculateDobutamina();
+            }
+            if (document.getElementById("esmololCard").classList.contains("active")) {
+                recalculateEsmolol();
+            }
+            if (document.getElementById("milrinonaCard").classList.contains("active")) {
+                recalculateMilrinona();
+            }
+            if (document.getElementById("tridilCard").classList.contains("active")) {
+                recalculateTridil();
+            }
+            if (document.getElementById("niprideCard").classList.contains("active")) {
+                recalculateNipride();
+            }
+            if (document.getElementById("noradrenalinaCard").classList.contains("active")) {
+                recalculateNoradrenalina();
+            }
+            if (document.getElementById("vasopressinaCard").classList.contains("active")) {
+                recalculateVasopressina();
+            }
+        });
+        document.getElementById("height").addEventListener("input", () => {
+            validateInput(document.getElementById("height"));
+            if (document.getElementById("adrenalinaCard").classList.contains("active")) {
+                recalculateAdrenalina();
+            }
+            if (document.getElementById("azulMetilenoCard").classList.contains("active")) {
+                recalculateAzulMetileno();
+            }
+            if (document.getElementById("precedexCard").classList.contains("active")) {
+                recalculatePrecedex();
+            }
+            if (document.getElementById("dobutaminaCard").classList.contains("active")) {
+                recalculateDobutamina();
+            }
+            if (document.getElementById("esmololCard").classList.contains("active")) {
+                recalculateEsmolol();
+            }
+            if (document.getElementById("milrinonaCard").classList.contains("active")) {
+                recalculateMilrinona();
+            }
+            if (document.getElementById("tridilCard").classList.contains("active")) {
+                recalculateTridil();
+            }
+            if (document.getElementById("niprideCard").classList.contains("active")) {
+                recalculateNipride();
+            }
+            if (document.getElementById("noradrenalinaCard").classList.contains("active")) {
+                recalculateNoradrenalina();
+            }
+            if (document.getElementById("vasopressinaCard").classList.contains("active")) {
+                recalculateVasopressina();
+            }
+        });
+
+        // Eventos para Adrenalina
+        document.getElementById("quantityAdrenalina").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityAdrenalina"));
+            recalculateAdrenalina();
+        });
+        document.getElementById("volumeAdrenalina").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeAdrenalina"));
+            recalculateAdrenalina();
+        });
+        document.getElementById("doseAdrenalina").addEventListener("input", () => {
+            validateInput(document.getElementById("doseAdrenalina"));
+            recalculateAdrenalina();
+        });
+
+        // Eventos para Azul de Metileno
+        document.getElementById("quantityAzulMetileno").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityAzulMetileno"));
+            recalculateAzulMetileno();
+        });
+        document.getElementById("volumeAzulMetileno").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeAzulMetileno"));
+            recalculateAzulMetileno();
+        });
+        document.getElementById("doseAzulMetileno").addEventListener("input", () => {
+            validateInput(document.getElementById("doseAzulMetileno"));
+            recalculateAzulMetileno();
+        });
+
+        // Eventos para Dexmedetomidina - Precedex
+        document.getElementById("quantityPrecedex").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityPrecedex"));
+            recalculatePrecedex();
+        });
+        document.getElementById("volumePrecedex").addEventListener("input", () => {
+            validateInput(document.getElementById("volumePrecedex"));
+            recalculatePrecedex();
+        });
+        document.getElementById("dosePrecedex").addEventListener("input", () => {
+            validateInput(document.getElementById("dosePrecedex"));
+            recalculatePrecedex();
+        });
+
+        // Eventos para Dobutamina
+        document.getElementById("quantityDobutamina").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityDobutamina"));
+            recalculateDobutamina();
+        });
+        document.getElementById("volumeDobutamina").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeDobutamina"));
+            recalculateDobutamina();
+        });
+        document.getElementById("doseDobutamina").addEventListener("input", () => {
+            validateInput(document.getElementById("doseDobutamina"));
+            recalculateDobutamina();
+        });
+
+        // Eventos para Esmolol
+        document.getElementById("quantityEsmolol").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityEsmolol"));
+            recalculateEsmolol();
+        });
+        document.getElementById("volumeEsmolol").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeEsmolol"));
+            recalculateEsmolol();
+        });
+        document.getElementById("doseEsmolol").addEventListener("input", () => {
+            validateInput(document.getElementById("doseEsmolol"));
+            recalculateEsmolol();
+        });
+
+        // Eventos para Milrinona - Primacor
+        document.getElementById("quantityMilrinona").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityMilrinona"));
+            recalculateMilrinona();
+        });
+        document.getElementById("volumeMilrinona").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeMilrinona"));
+            recalculateMilrinona();
+        });
+        document.getElementById("doseMilrinona").addEventListener("input", () => {
+            validateInput(document.getElementById("doseMilrinona"));
+            recalculateMilrinona();
+        });
+
+        // Eventos para Nitroglicerina - Tridil
+        document.getElementById("quantityTridil").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityTridil"));
+            recalculateTridil();
+        });
+        document.getElementById("volumeTridil").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeTridil"));
+            recalculateTridil();
+        });
+        document.getElementById("doseTridil").addEventListener("input", () => {
+            validateInput(document.getElementById("doseTridil"));
+            recalculateTridil();
+        });
+
+        // Eventos para Nitroprussiato - Nipride
+        document.getElementById("quantityNipride").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityNipride"));
+            recalculateNipride();
+        });
+        document.getElementById("volumeNipride").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeNipride"));
+            recalculateNipride();
+        });
+        document.getElementById("doseNipride").addEventListener("input", () => {
+            validateInput(document.getElementById("doseNipride"));
+            recalculateNipride();
+        });
+
+        // Eventos para Noradrenalina
+        document.getElementById("quantityNoradrenalina").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityNoradrenalina"));
+            recalculateNoradrenalina();
+        });
+        document.getElementById("volumeNoradrenalina").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeNoradrenalina"));
+            recalculateNoradrenalina();
+        });
+        document.getElementById("doseNoradrenalina").addEventListener("input", () => {
+            validateInput(document.getElementById("doseNoradrenalina"));
+            recalculateNoradrenalina();
+        });
+
+        // Eventos para Vasopressina - Encrise
+        document.getElementById("quantityVasopressina").addEventListener("input", () => {
+            validateInput(document.getElementById("quantityVasopressina"));
+            recalculateVasopressina();
+        });
+        document.getElementById("volumeVasopressina").addEventListener("input", () => {
+            validateInput(document.getElementById("volumeVasopressina"));
+            recalculateVasopressina();
+        });
+        document.getElementById("doseVasopressina").addEventListener("input", () => {
+            validateInput(document.getElementById("doseVasopressina"));
+            recalculateVasopressina();
+        });
+    </script>
+</body>
+</html>
